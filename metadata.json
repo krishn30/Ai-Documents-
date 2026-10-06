@@ -1,0 +1,6 @@
+{
+  "name": "StudentToolBox",
+  "description": "Every Tool a Student Needs — In One Place. All-in-one productivity platform with real PDF, Image, Text, and Calculator tools plus Gemini AI assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

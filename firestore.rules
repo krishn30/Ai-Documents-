@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation for UserProfile
+    function isValidUserProfile(data, userId) {
+      return data.id is string &&
+             data.id == userId &&
+             data.email is string &&
+             data.email.size() <= 150 &&
+             (!('name' in data) || (data.name is string && data.name.size() <= 100)) &&
+             (!('studyStreakDays' in data) || data.studyStreakDays is number) &&
+             (!('totalStudyMinutes' in data) || data.totalStudyMinutes is number) &&
+             (!('completedTasksCount' in data) || data.completedTasksCount is number);
+    }
+
+    // Validation for TaskItem
+    function isValidTaskItem(data) {
+      return data.id is string &&
+             isValidId(data.id) &&
+             data.title is string &&
+             data.title.size() > 0 &&
+             data.title.size() <= 200 &&
+             (!('subject' in data) || (data.subject is string && data.subject.size() <= 100)) &&
+             (!('completed' in data) || data.completed is bool);
+    }
+
+    // Validation for ExamItem
+    function isValidExamItem(data) {
+      return data.id is string &&
+             isValidId(data.id) &&
+             data.subject is string &&
+             data.subject.size() <= 100 &&
+             data.examName is string &&
+             data.examName.size() <= 150 &&
+             data.examDate is string &&
+             data.examDate.size() <= 30;
+    }
+
+    // Test connection document for verifying client connectivity
+    match /test/connection {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // User profile documents (strict owner-only access)
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming(), userId);
+      allow delete: if false;
+
+      // Sub-collection: Tasks
+      match /tasks/{taskId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(taskId) && isValidTaskItem(incoming());
+        allow update: if isOwner(userId) && isValidId(taskId) && isValidTaskItem(incoming());
+        allow delete: if isOwner(userId) && isValidId(taskId);
+      }
+
+      // Sub-collection: Exams
+      match /exams/{examId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(examId) && isValidExamItem(incoming());
+        allow update: if isOwner(userId) && isValidId(examId) && isValidExamItem(incoming());
+        allow delete: if isOwner(userId) && isValidId(examId);
+      }
+    }
+  }
+}

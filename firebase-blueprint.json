@@ -1,0 +1,138 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Student user profile information",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique user ID matching auth.uid",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Student display name",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "description": "Student email address",
+          "maxLength": 150
+        },
+        "avatar": {
+          "type": "string",
+          "description": "Avatar URL",
+          "maxLength": 500
+        },
+        "studyStreakDays": {
+          "type": "number",
+          "description": "Current consecutive study streak days"
+        },
+        "totalStudyMinutes": {
+          "type": "number",
+          "description": "Total logged study minutes"
+        },
+        "lastStudyDate": {
+          "type": "string",
+          "description": "Last recorded study session date (YYYY-MM-DD)",
+          "maxLength": 20
+        },
+        "completedTasksCount": {
+          "type": "number",
+          "description": "Number of completed study tasks"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Account creation timestamp",
+          "maxLength": 50
+        }
+      },
+      "required": ["id", "email"]
+    },
+    "TaskItem": {
+      "title": "TaskItem",
+      "description": "A study task or homework item belonging to a student",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique task ID",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "description": "Task description or title",
+          "maxLength": 200
+        },
+        "subject": {
+          "type": "string",
+          "description": "Academic subject",
+          "maxLength": 100
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Task due date",
+          "maxLength": 50
+        },
+        "completed": {
+          "type": "boolean",
+          "description": "Completion status"
+        },
+        "priority": {
+          "type": "string",
+          "description": "Task priority level",
+          "enum": ["low", "medium", "high"],
+          "maxLength": 20
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Epoch creation timestamp"
+        }
+      },
+      "required": ["id", "title"]
+    },
+    "ExamItem": {
+      "title": "ExamItem",
+      "description": "An upcoming exam or test",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique exam ID",
+          "maxLength": 128
+        },
+        "subject": {
+          "type": "string",
+          "description": "Exam course or subject",
+          "maxLength": 100
+        },
+        "examName": {
+          "type": "string",
+          "description": "Name or topic of exam",
+          "maxLength": 150
+        },
+        "examDate": {
+          "type": "string",
+          "description": "Date of exam (YYYY-MM-DD)",
+          "maxLength": 30
+        }
+      },
+      "required": ["id", "subject", "examName", "examDate"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Student user profile documents"
+    },
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "TaskItem",
+      "description": "Personal student study tasks"
+    },
+    "/users/{userId}/exams/{examId}": {
+      "schema": "ExamItem",
+      "description": "Personal student upcoming exams"
+    }
+  }
+}
